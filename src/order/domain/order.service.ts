@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OrderRepository } from './order.repository';
-import { Order } from './order.aggregate';
+import { Order } from './aggregators/order.aggregate';
+import { NewOrder } from './aggregators/newOrder.aggregate';
+import { UpdateOrder } from './aggregators/updateOrder.aggregate';
 
 @Injectable()
 export class OrderService {
@@ -15,11 +17,11 @@ export class OrderService {
     return this.orderRepository.getAll();
   }
 
-  async save(order: Order): Promise<Order> {
+  async save(order: NewOrder): Promise<Order> {
     return this.orderRepository.save(order);
   }
 
-  async update(order: Order): Promise<Order> {
+  async update(order: UpdateOrder): Promise<Order> {
     return this.orderRepository.update(order);
   }
 

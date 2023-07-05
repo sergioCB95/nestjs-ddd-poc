@@ -8,7 +8,11 @@ import {
   Put,
 } from '@nestjs/common';
 import { OrderService } from '../domain/order.service';
-import { Order } from '../domain/order.aggregate';
+import { CreateOrderDTOMapper } from './dtos/mappers/createOrder.dto.mapper';
+import { UpdateOrderDTO } from './dtos/updateOrder.dto';
+import { CreateOrderDTO } from './dtos/createOrder.dto';
+import { Order } from '../domain/aggregators/order.aggregate';
+import { UpdateOrderDTOMapper } from './dtos/mappers/updateOrder.dto.mapper';
 
 @Controller('order')
 export class OrderController {
@@ -25,13 +29,15 @@ export class OrderController {
   }
 
   @Post()
-  save(@Body() order: Order): Promise<Order> {
-    return this.orderService.save(order);
+  save(@Body() order: CreateOrderDTO): Promise<Order> {
+    return this.orderService.save(new CreateOrderDTOMapper().toNewOrder(order));
   }
 
   @Put()
-  update(@Body() order: Order): Promise<Order> {
-    return this.orderService.update(order);
+  update(@Body() order: UpdateOrderDTO): Promise<Order> {
+    return this.orderService.update(
+      new UpdateOrderDTOMapper().toUpdateOrder(order),
+    );
   }
 
   @Delete(':id')
