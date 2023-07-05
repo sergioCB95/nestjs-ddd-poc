@@ -1,7 +1,12 @@
 import { UpdateOrderItemDTO } from './updateOrderItem.dto';
-import { CreateOrderItemDTO } from './createOrderItem.dto';
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
-export interface UpdateOrderDTO {
+export class UpdateOrderDTO {
+  @ApiProperty()
+  @Type(() => String)
   id: string;
-  items: Array<UpdateOrderItemDTO | CreateOrderItemDTO>;
+
+  @ApiProperty({ type: [UpdateOrderItemDTO] })
+  items: Array<UpdateOrderItemDTO>;
 }
