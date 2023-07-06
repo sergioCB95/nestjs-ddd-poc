@@ -1,6 +1,5 @@
 import { UpdateOrderItemDTOMapper } from './updateOrderItem.dto.mapper';
 import { UpdateOrderDTO } from '../updateOrder.dto';
-import { CreateOrderItemDTOMapper } from './createOrderItem.dto.mapper';
 import { isNewUpdateOrderItemDTO } from '../../utils/isNewUpdateOrderItemDTO';
 import { UpdateOrder } from '../../../domain/aggregators/updateOrder.aggregate';
 
