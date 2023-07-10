@@ -9,6 +9,7 @@ export class OrderDAOMapper {
     const orderItemSchemaMapper = new OrderItemDAOMapper();
     return new OrderFactory().createOrder({
       id: orderDAO.id,
+      status: orderDAO.status,
       items: orderItemsDAO.map((item) =>
         orderItemSchemaMapper.toOrderItem(item),
       ),
@@ -18,6 +19,7 @@ export class OrderDAOMapper {
   fromOrder(order: Order): OrderDAO {
     return {
       id: order.id,
+      status: order.status,
     };
   }
 }

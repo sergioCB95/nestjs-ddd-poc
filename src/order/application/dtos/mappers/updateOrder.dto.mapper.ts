@@ -8,6 +8,7 @@ export class UpdateOrderDTOMapper {
     const updateOrderItemDTOMapper = new UpdateOrderItemDTOMapper();
     return {
       id: updateOrderDTO.id,
+      status: updateOrderDTO.status,
       items: updateOrderDTO.items.map((item) =>
         isNewUpdateOrderItemDTO(item)
           ? updateOrderItemDTOMapper.toNewOrderItem(item)

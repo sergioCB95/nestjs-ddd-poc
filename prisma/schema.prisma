@@ -11,8 +11,15 @@ datasource db {
 }
 
 model Order {
-  id    String      @id @default(uuid())
-  items OrderItem[]
+  id        String      @id @default(uuid())
+  status    OrderStatus @default(PENDING)
+  items     OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
 }
 
 model OrderItem {
