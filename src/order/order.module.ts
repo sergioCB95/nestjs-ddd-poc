@@ -4,6 +4,7 @@ import { OrderController } from './application/order.controller';
 import { OrderRepository } from './domain/order.repository';
 import { OrderPrismaRepository } from './infrastructure/order.prisma.repository';
 import { OrderService } from './domain/order.service';
+import { OrderPublisher } from './application/order.publisher';
 
 @Module({
   imports: [CommonsModule],
@@ -14,6 +15,7 @@ import { OrderService } from './domain/order.service';
       provide: OrderRepository,
       useClass: OrderPrismaRepository,
     },
+    OrderPublisher,
   ],
 })
 export class OrderModule {}
