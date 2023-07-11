@@ -1,9 +1,12 @@
 import { Order } from '../aggregators/order.aggregate';
-import { Event } from '../../../commons/domain/event';
 import { OrderEvents } from './order.events';
+import { OrderUpdatedTuple } from '../aggregators/orderUpdatedTuple.aggregate';
+import { AbstractEventFactory } from '../../../commons/domain/abstract.event.factory';
 
-export class OrderEventFactory {
-  buildOrderCreatedEvent(data: Order) {
-    return new Event<Order>(OrderEvents.Created, data);
-  }
+export class OrderCreatedEventFactory extends AbstractEventFactory<Order> {
+  eventName = OrderEvents.Created;
+}
+
+export class OrderUpdatedEventFactory extends AbstractEventFactory<OrderUpdatedTuple> {
+  eventName = OrderEvents.Updated;
 }

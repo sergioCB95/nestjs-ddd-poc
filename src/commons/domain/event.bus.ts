@@ -4,7 +4,7 @@ import { filter } from 'rxjs/operators';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class EventObserver {
+export class EventBus {
   private events: Observable<Event<any>>;
   private eventsObserver: Subscriber<Event<any>>;
 

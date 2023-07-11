@@ -1,18 +1,27 @@
 import { AmqpService } from '../../commons/infrastructure/amqp.service';
-import { EventObserver } from '../../commons/domain/event.observer';
+import { EventBus } from '../../commons/domain/event.bus';
 import { Injectable } from '@nestjs/common';
 import { OrderEvents } from '../domain/events/order.events';
+import { Order } from '../domain/aggregators/order.aggregate';
+import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 
 @Injectable()
 export class OrderPublisher {
   constructor(
     private readonly amqpService: AmqpService,
-    private readonly eventObserver: EventObserver,
+    private readonly eventBus: EventBus,
   ) {}
 
   async onApplicationBootstrap() {
-    this.eventObserver.subscribe(OrderEvents.Created, async (order) => {
+    this.eventBus.subscribe<Order>(OrderEvents.Created, async (order) => {
       await this.amqpService.publish(OrderEvents.Created, order);
     });
+
+    this.eventBus.subscribe<OrderUpdatedTuple>(
+      OrderEvents.Updated,
+      async (orderUpdatedTuple) => {
+        await this.amqpService.publish(OrderEvents.Updated, orderUpdatedTuple);
+      },
+    );
   }
 }

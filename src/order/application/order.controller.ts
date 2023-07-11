@@ -13,6 +13,7 @@ import { UpdateOrderDTO } from './dtos/updateOrder.dto';
 import { CreateOrderDTO } from './dtos/createOrder.dto';
 import { Order } from '../domain/aggregators/order.aggregate';
 import { UpdateOrderDTOMapper } from './dtos/mappers/updateOrder.dto.mapper';
+import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 
 @Controller('order')
 export class OrderController {
@@ -34,7 +35,7 @@ export class OrderController {
   }
 
   @Put()
-  update(@Body() order: UpdateOrderDTO): Promise<Order> {
+  update(@Body() order: UpdateOrderDTO): Promise<OrderUpdatedTuple> {
     return this.orderService.update(
       new UpdateOrderDTOMapper().toUpdateOrder(order),
     );
