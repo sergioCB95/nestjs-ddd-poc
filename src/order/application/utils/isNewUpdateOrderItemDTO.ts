@@ -1,4 +1,4 @@
-import { UpdateOrderItemDTO } from '../dtos/updateOrderItem.dto';
+import { UpdateOrderItemDTO } from '../dtos/controller/updateOrderItem.dto';
 
 export const isNewUpdateOrderItemDTO = (
   orderItem: UpdateOrderItemDTO,

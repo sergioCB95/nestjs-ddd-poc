@@ -1,5 +1,5 @@
 import { CreateOrderItemDTO } from '../createOrderItem.dto';
-import { NewOrderItem } from '../../../domain/entities/newOrderItem.entity';
+import { NewOrderItem } from '../../../../domain/entities/newOrderItem.entity';
 
 export class CreateOrderItemDTOMapper {
   toNewOrderItem(createOrderItemDTO: CreateOrderItemDTO): NewOrderItem {

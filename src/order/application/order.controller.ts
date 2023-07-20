@@ -8,11 +8,11 @@ import {
   Put,
 } from '@nestjs/common';
 import { OrderService } from '../domain/order.service';
-import { CreateOrderDTOMapper } from './dtos/mappers/createOrder.dto.mapper';
-import { UpdateOrderDTO } from './dtos/updateOrder.dto';
-import { CreateOrderDTO } from './dtos/createOrder.dto';
+import { CreateOrderDTOMapper } from './dtos/controller/mappers/createOrder.dto.mapper';
+import { UpdateOrderDTO } from './dtos/controller/updateOrder.dto';
+import { CreateOrderDTO } from './dtos/controller/createOrder.dto';
 import { Order } from '../domain/aggregators/order.aggregate';
-import { UpdateOrderDTOMapper } from './dtos/mappers/updateOrder.dto.mapper';
+import { UpdateOrderDTOMapper } from './dtos/controller/mappers/updateOrder.dto.mapper';
 import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 
 @Controller('order')
