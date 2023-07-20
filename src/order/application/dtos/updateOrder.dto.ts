@@ -8,6 +8,7 @@ export class UpdateOrderDTO {
   @Type(() => String)
   id: string;
 
+  @ApiProperty()
   @Type(() => String)
   status: OrderStatus;
 

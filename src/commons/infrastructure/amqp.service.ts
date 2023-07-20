@@ -15,11 +15,16 @@ export class AmqpService implements OnModuleInit {
           queues: ['nestjs-ddd-poc-queue'],
           bindings: [
             'nestjs-ddd-poc-exchange[nestjs-ddd-poc.v1.order.created] -> nestjs-ddd-poc-queue',
+            'nestjs-ddd-poc-exchange[nestjs-ddd-poc.v1.order.updated] -> nestjs-ddd-poc-queue',
           ],
           publications: {
             order_created: {
               exchange: 'nestjs-ddd-poc-exchange',
               routingKey: 'nestjs-ddd-poc.v1.order.created',
+            },
+            order_updated: {
+              exchange: 'nestjs-ddd-poc-exchange',
+              routingKey: 'nestjs-ddd-poc.v1.order.updated',
             },
           },
         },
