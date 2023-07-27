@@ -4,6 +4,8 @@ import { ShipmentStatusType } from './entities/shipmentStatusType.entity';
 import { Shipment } from './aggregators/shipment.aggregator';
 import { ShipmentFactory } from './factories/shipment.factory';
 import { ShipmentStatusFactory } from './factories/shipmentStatus.factory';
+import { ShipmentUpdatedTuple } from './aggregators/shipmentUpdatedTuple.aggregate';
+import { UpdatedTupleFactory } from '../../commons/domain/updatedTuple.factory';
 
 @Injectable()
 export class ShipmentService {
@@ -14,7 +16,7 @@ export class ShipmentService {
   async getAll(): Promise<Shipment[]> {
     return await this.shipmentRepository.getAll();
   }
-  async getById(id: string): Promise<Shipment | null> {
+  async get(id: string): Promise<Shipment | null> {
     return await this.shipmentRepository.getById(id);
   }
   async create(orderId: string): Promise<Shipment> {
@@ -25,15 +27,20 @@ export class ShipmentService {
   async updateStatus(
     id: string,
     status: ShipmentStatusType,
-  ): Promise<Shipment | null> {
-    const shipment = await this.getById(id);
+  ): Promise<ShipmentUpdatedTuple | null> {
+    const shipment = await this.get(id);
     if (!shipment) {
       return null;
     }
-    shipment.statuses.push(
-      new ShipmentStatusFactory().createNewShipmentStatus(status),
-    );
+    const shipmentUpdated = new ShipmentFactory().createShipment({
+      id: shipment.id,
+      orderId: shipment.orderId,
+      statuses: [
+        ...shipment.statuses,
+        new ShipmentStatusFactory().createNewShipmentStatus(status),
+      ],
+    });
     await this.shipmentRepository.updateLastStatus(shipment);
-    return shipment;
+    return new UpdatedTupleFactory<Shipment>().build(shipment, shipmentUpdated);
   }
 }
