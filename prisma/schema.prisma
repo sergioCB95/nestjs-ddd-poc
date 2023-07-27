@@ -48,6 +48,7 @@ model Shipment {
 model ShipmentStatus {
   id         String             @id @default(uuid())
   type       ShipmentStatusType
+  date       DateTime
   Shipment   Shipment?          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   shipmentId String?
 }

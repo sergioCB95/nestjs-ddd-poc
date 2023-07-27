@@ -6,7 +6,7 @@ import { ShipmentFactory } from './factories/shipment.factory';
 import { ShipmentStatusFactory } from './factories/shipmentStatus.factory';
 
 @Injectable()
-export class shipmentService {
+export class ShipmentService {
   constructor(
     @Inject(ShipmentRepository)
     private readonly shipmentRepository: ShipmentRepository,
