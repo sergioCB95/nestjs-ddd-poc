@@ -11,20 +11,37 @@ export class AmqpService implements OnModuleInit {
           connection: {
             url: 'amqp://guest:guest@localhost:5672/',
           },
-          exchanges: ['nestjs-ddd-poc-exchange'],
+          exchanges: {
+            'order.created': {
+              type: 'fanout',
+              options: {
+                durable: false,
+              },
+            },
+            'order.updated': {
+              type: 'fanout',
+              options: {
+                durable: false,
+              },
+            },
+          },
           queues: ['nestjs-ddd-poc-queue'],
-          bindings: [
-            'nestjs-ddd-poc-exchange[nestjs-ddd-poc.v1.order.created] -> nestjs-ddd-poc-queue',
-            'nestjs-ddd-poc-exchange[nestjs-ddd-poc.v1.order.updated] -> nestjs-ddd-poc-queue',
-          ],
+          bindings: {
+            'order.created_nestjs-ddd-poc-queue': {
+              source: 'order.created',
+              destination: 'nestjs-ddd-poc-queue',
+            },
+            'order.updated_nestjs-ddd-poc-queue': {
+              source: 'order.updated',
+              destination: 'nestjs-ddd-poc-queue',
+            },
+          },
           publications: {
             order_created: {
-              exchange: 'nestjs-ddd-poc-exchange',
-              routingKey: 'nestjs-ddd-poc.v1.order.created',
+              exchange: 'order.created',
             },
             order_updated: {
-              exchange: 'nestjs-ddd-poc-exchange',
-              routingKey: 'nestjs-ddd-poc.v1.order.updated',
+              exchange: 'order.updated',
             },
           },
         },

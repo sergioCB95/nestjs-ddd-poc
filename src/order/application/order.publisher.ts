@@ -19,7 +19,11 @@ export class OrderPublisher extends AmqpEventPublisher {
       payload: CreateOrderEventDTO,
     },
   })
-  orderCreated() {}
+  orderCreated() {
+    this.eventMap[OrderEvents.Created] = {
+      eventName: OrderEvents.Created,
+    };
+  }
 
   @AsyncApiPub({
     channel: 'nestjs-ddd-poc.v1.order.updated',
@@ -27,16 +31,11 @@ export class OrderPublisher extends AmqpEventPublisher {
       payload: UpdateOrderEventDto,
     },
   })
-  orderUpdated() {}
-
-  eventMap = {
-    [OrderEvents.Created]: {
-      eventName: OrderEvents.Created,
-    },
-    [OrderEvents.Updated]: {
+  orderUpdated() {
+    this.eventMap[OrderEvents.Updated] = {
       eventName: OrderEvents.Updated,
-    },
-  };
+    };
+  }
 }
 
 export const OrderEventPublisher = Symbol('OrderEventPublisher');

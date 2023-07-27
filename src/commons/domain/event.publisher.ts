@@ -6,7 +6,7 @@ export interface IntegrationEventConfig {
 }
 
 export abstract class EventPublisher {
-  abstract eventMap: { [key: string]: IntegrationEventConfig };
+  eventMap: { [key: string]: IntegrationEventConfig } = {};
   abstract publishEvent(eventName: string, data: any): Promise<void>;
 
   publish(event: Event<any>): Promise<void> {
