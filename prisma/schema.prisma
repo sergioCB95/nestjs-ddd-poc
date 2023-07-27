@@ -11,9 +11,10 @@ datasource db {
 }
 
 model Order {
-  id        String      @id @default(uuid())
-  status    OrderStatus @default(PENDING)
-  items     OrderItem[]
+  id       String      @id @default(uuid())
+  status   OrderStatus @default(PENDING)
+  items    OrderItem[]
+  Shipment Shipment[]
 }
 
 enum OrderStatus {
@@ -28,4 +29,25 @@ model OrderItem {
   productId String
   Order     Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   String?
+}
+
+enum ShipmentStatusType {
+  IN_PROCESS
+  READY
+  IN_TRANSIT
+  DELIVERED
+}
+
+model Shipment {
+  id       String           @id @default(uuid())
+  orderId  String
+  Order    Order?           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  statuses ShipmentStatus[]
+}
+
+model ShipmentStatus {
+  id         String             @id @default(uuid())
+  type       ShipmentStatusType
+  Shipment   Shipment?          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId String?
 }
