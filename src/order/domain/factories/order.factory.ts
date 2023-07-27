@@ -1,11 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Order } from '../aggregators/order.aggregate';
 import { NewOrder } from '../aggregators/newOrder.aggregate';
-import { OrderInput } from '../aggregators/orderInput.aggregate';
-import { UpdateOrder } from '../aggregators/updateOrder.aggregate';
+import { UpdatedOrder } from '../aggregators/updatedOrder.aggregate';
 import { isNewOrderItem } from '../utils/isNewOrderItem';
 import { OrderItemFactory } from './orderItem.factory';
 import { OrderStatus } from '../entities/orderStatus.entity';
+
+export type OrderInput = Order;
 
 export class OrderFactory {
   orderItemFactory = new OrderItemFactory();
@@ -22,7 +23,7 @@ export class OrderFactory {
       items: newOrder.items.map(this.orderItemFactory.createNewOrderItem),
     });
 
-  createUpdatedOrder = (updatedOrder: UpdateOrder): Order =>
+  createUpdatedOrder = (updatedOrder: UpdatedOrder): Order =>
     this.createOrder({
       id: updatedOrder.id,
       status: updatedOrder.status,

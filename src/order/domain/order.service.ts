@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { OrderRepository } from './order.repository';
 import { Order } from './aggregators/order.aggregate';
 import { NewOrder } from './aggregators/newOrder.aggregate';
-import { UpdateOrder } from './aggregators/updateOrder.aggregate';
+import { UpdatedOrder } from './aggregators/updatedOrder.aggregate';
 import { OrderFactory } from './factories/order.factory';
 import { OrderUpdatedTuple } from './aggregators/orderUpdatedTuple.aggregate';
 import { EventPublisher } from '../../commons/domain/event.publisher';
@@ -31,7 +31,7 @@ export class OrderService {
     return storedOrder;
   }
 
-  async update(updatedOrder: UpdateOrder): Promise<OrderUpdatedTuple> {
+  async update(updatedOrder: UpdatedOrder): Promise<OrderUpdatedTuple> {
     const order = new OrderFactory().createUpdatedOrder(updatedOrder);
     const orderUpdatedTuple = await this.orderRepository.update(order);
     await this.orderPublisher.publish(new OrderUpdatedEvent(orderUpdatedTuple));

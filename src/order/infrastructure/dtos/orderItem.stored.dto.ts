@@ -1,4 +1,4 @@
-export interface OrderItemStoredDao {
+export interface OrderItemStoredDto {
   id: string;
   amount: number;
   productId: string;
