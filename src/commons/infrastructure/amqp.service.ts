@@ -1,15 +1,22 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { BrokerAsPromised as Broker } from 'rascal';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AmqpService implements OnModuleInit {
   private broker: Broker;
+  private readonly amqpUrl: string;
+
+  constructor(private configService: ConfigService) {
+    this.amqpUrl = this.configService.get<string>('amqp.url');
+  }
+
   private async createMQProducer() {
     this.broker = await Broker.create({
       vhosts: {
         '/': {
           connection: {
-            url: 'amqp://guest:guest@localhost:5672/',
+            url: this.amqpUrl,
           },
           exchanges: {
             'order.created': {
