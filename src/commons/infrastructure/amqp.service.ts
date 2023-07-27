@@ -32,25 +32,37 @@ export class AmqpService implements OnModuleInit {
               },
             },
           },
-          queues: ['nestjs-ddd-poc-queue'],
+          queues: [
+            'nestjs-ddd-poc-queue_order.created',
+            'nestjs-ddd-poc-queue_order.updated',
+          ],
           bindings: {
-            'order.created_nestjs-ddd-poc-queue': {
+            'order.created_nestjs-ddd-poc-queue_order.created': {
               source: 'order.created',
-              destination: 'nestjs-ddd-poc-queue',
+              destination: 'nestjs-ddd-poc-queue_order.created',
             },
-            'order.updated_nestjs-ddd-poc-queue': {
+            'order.updated_nestjs-ddd-poc-queue_order.updated': {
               source: 'order.updated',
-              destination: 'nestjs-ddd-poc-queue',
+              destination: 'nestjs-ddd-poc-queue_order.updated',
             },
           },
-          publications: {
-            order_created: {
-              exchange: 'order.created',
-            },
-            order_updated: {
-              exchange: 'order.updated',
-            },
-          },
+        },
+      },
+      publications: {
+        order_created: {
+          vhost: '/',
+          exchange: 'order.created',
+        },
+        order_updated: {
+          vhost: '/',
+          exchange: 'order.updated',
+        },
+      },
+      subscriptions: {
+        order_updated: {
+          vhost: '/',
+          queue: 'nestjs-ddd-poc-queue_order.updated',
+          contentType: 'application/json',
         },
       },
     });
@@ -63,5 +75,9 @@ export class AmqpService implements OnModuleInit {
 
   async publish(event: string, message: any) {
     return this.broker.publish(event, message);
+  }
+
+  async subscribe(event: string) {
+    return this.broker.subscribe(event);
   }
 }

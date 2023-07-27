@@ -6,7 +6,7 @@ export abstract class AmqpEventPublisher extends EventPublisher {
     super();
   }
 
-  async publishEvent(eventName: string, data: any): Promise<void> {
+  protected async publishEvent(eventName: string, data: any): Promise<void> {
     await this.amqpService.publish(eventName, data);
   }
 }
