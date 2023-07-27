@@ -2,13 +2,16 @@ import { PrismaService } from '../../commons/infrastructure/prisma.service';
 import { OrderRepository } from '../domain/order.repository';
 import { Order } from '../domain/aggregators/order.aggregate';
 import { Injectable } from '@nestjs/common';
-import { OrderDAOMapper } from './daos/mappers/order.dao.mapper';
-import { OrderItemDAOMapper } from './daos/mappers/orderItem.dao.mapper';
+import { OrderStoredDtoMapper } from './dtos/mappers/order.stored.dto.mapper';
+import { OrderItemStoredDtoMapper } from './dtos/mappers/orderItem.stored.dto.mapper';
 import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 import { UpdatedTupleFactory } from '../../commons/domain/updatedTuple.factory';
 
 @Injectable()
 export class OrderPrismaRepository implements OrderRepository {
+  orderStoredDtoMapper = new OrderStoredDtoMapper();
+  orderItemStoredDtoMapper = new OrderItemStoredDtoMapper();
+
   constructor(private prisma: PrismaService) {}
 
   async getById(id: string): Promise<Order | null> {
@@ -16,22 +19,24 @@ export class OrderPrismaRepository implements OrderRepository {
       where: { id },
       include: { items: true },
     });
-    return order ? new OrderDAOMapper().toOrder(order, order.items) : null;
+    return order
+      ? new OrderStoredDtoMapper().toOrder(order, order.items)
+      : null;
   }
 
   async getAll(): Promise<Order[]> {
     const orders = await this.prisma.order.findMany({
       include: { items: true },
     });
-    const mapper = new OrderDAOMapper();
+    const mapper = new OrderStoredDtoMapper();
     return orders.map((order) => mapper.toOrder(order, order.items));
   }
 
   async save(order: Order): Promise<Order> {
-    const daoMapper = new OrderDAOMapper();
-    const itemsMapper = new OrderItemDAOMapper();
-    const newOrderDao = daoMapper.fromOrder(order);
-    const newOrderItemsDao = order.items.map(itemsMapper.fromOrderItem);
+    const newOrderDao = this.orderStoredDtoMapper.fromOrder(order);
+    const newOrderItemsDao = order.items.map(
+      this.orderItemStoredDtoMapper.fromOrderItem,
+    );
     const newOrder = await this.prisma.order.create({
       data: {
         ...newOrderDao,
@@ -43,12 +48,10 @@ export class OrderPrismaRepository implements OrderRepository {
         items: true,
       },
     });
-    return daoMapper.toOrder(newOrder, newOrder.items);
+    return this.orderStoredDtoMapper.toOrder(newOrder, newOrder.items);
   }
 
   async update(order: Order): Promise<OrderUpdatedTuple> {
-    const daoMapper = new OrderDAOMapper();
-    const itemDAOMapper = new OrderItemDAOMapper();
     const storedOrder = await this.getById(order.id);
 
     const itemsToCreate = order.items.filter(
@@ -61,7 +64,7 @@ export class OrderPrismaRepository implements OrderRepository {
       (item) => !order.items.includes(item),
     );
 
-    const orderDAO = daoMapper.fromOrder(order);
+    const orderDAO = this.orderStoredDtoMapper.fromOrder(order);
 
     const orderUpdate = this.prisma.order.update({
       where: { id: order.id },
@@ -70,7 +73,9 @@ export class OrderPrismaRepository implements OrderRepository {
         items: {
           deleteMany: itemsToDelete.map((item) => ({ id: item.id })),
           createMany: {
-            data: itemsToCreate.map(itemDAOMapper.fromOrderItem),
+            data: itemsToCreate.map(
+              this.orderItemStoredDtoMapper.fromOrderItem,
+            ),
           },
         },
       },
@@ -81,7 +86,7 @@ export class OrderPrismaRepository implements OrderRepository {
     const orderItemUpdates = itemsToUpdate.map((item) =>
       this.prisma.orderItem.update({
         where: { id: item.id },
-        data: itemDAOMapper.fromOrderItem(item),
+        data: this.orderItemStoredDtoMapper.fromOrderItem(item),
       }),
     );
 

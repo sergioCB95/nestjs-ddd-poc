@@ -1,6 +1,6 @@
 import { OrderStatus } from '../../domain/entities/orderStatus.entity';
 
-export interface OrderDAO {
+export interface OrderStoredDto {
   id: string;
   status: OrderStatus;
 }

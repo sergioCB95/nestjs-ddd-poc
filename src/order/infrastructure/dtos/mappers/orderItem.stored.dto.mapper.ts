@@ -1,9 +1,9 @@
-import { OrderItemDAO } from '../orderItem.dao';
+import { OrderItemStoredDao } from '../orderItem.stored.dao';
 import { OrderItem } from '../../../domain/entities/orderItem.entity';
 import { OrderItemFactory } from '../../../domain/factories/orderItem.factory';
 
-export class OrderItemDAOMapper {
-  toOrderItem(orderItemDAO: OrderItemDAO): OrderItem {
+export class OrderItemStoredDtoMapper {
+  toOrderItem(orderItemDAO: OrderItemStoredDao): OrderItem {
     return new OrderItemFactory().createOrderItem({
       id: orderItemDAO.id,
       amount: orderItemDAO.amount,
@@ -11,7 +11,7 @@ export class OrderItemDAOMapper {
     });
   }
 
-  fromOrderItem(orderItem: OrderItem): OrderItemDAO {
+  fromOrderItem(orderItem: OrderItem): OrderItemStoredDao {
     return {
       id: orderItem.id,
       amount: orderItem.amount,
