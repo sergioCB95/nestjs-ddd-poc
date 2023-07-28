@@ -54,7 +54,7 @@ export class ShipmentPrismaRepository implements ShipmentRepository {
 
   async updateLastStatus(shipment: Shipment): Promise<Shipment> {
     const lastStatus = shipment.statuses[shipment.statuses.length - 1];
-    this.prisma.shipmentStatus.create({
+    await this.prisma.shipmentStatus.create({
       data: {
         ...lastStatus,
         shipmentId: shipment.id,

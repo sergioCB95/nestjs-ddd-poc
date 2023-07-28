@@ -5,7 +5,7 @@ import { ShipmentStatus } from '../entities/shipmentStatus.entity';
 type ShipmentStatusInput = ShipmentStatus;
 
 export class ShipmentStatusFactory {
-  createShipment = ({
+  createShipmentStatus = ({
     id,
     type,
     date,
@@ -16,7 +16,7 @@ export class ShipmentStatusFactory {
   });
 
   createNewShipmentStatus = (type: ShipmentStatusType): ShipmentStatus =>
-    this.createShipment({
+    this.createShipmentStatus({
       id: uuidv4(),
       type,
       date: new Date(),

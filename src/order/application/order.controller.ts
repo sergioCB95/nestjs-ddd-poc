@@ -14,7 +14,9 @@ import { CreateOrderDTO } from './dtos/controller/createOrder.dto';
 import { Order } from '../domain/aggregators/order.aggregate';
 import { UpdateOrderDTOMapper } from './dtos/controller/mappers/updateOrder.dto.mapper';
 import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('order')
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}

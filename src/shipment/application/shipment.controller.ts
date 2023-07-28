@@ -3,7 +3,9 @@ import { Shipment } from '../domain/aggregators/shipment.aggregator';
 import { ShipmentService } from '../domain/shipment.service';
 import { ShipmentUpdatedTuple } from '../domain/aggregators/shipmentUpdatedTuple.aggregate';
 import { UpdateStatusDto } from './dto/updateStatus.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('shipment')
 @Controller('shipment')
 export class ShipmentController {
   constructor(private readonly shipmentService: ShipmentService) {}
@@ -18,7 +20,7 @@ export class ShipmentController {
     return this.shipmentService.getAll();
   }
 
-  @Put()
+  @Put('status')
   updateStatus(
     @Body() { id, status }: UpdateStatusDto,
   ): Promise<ShipmentUpdatedTuple> {

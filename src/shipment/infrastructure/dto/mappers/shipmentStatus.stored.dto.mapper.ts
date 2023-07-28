@@ -1,16 +1,16 @@
 import { ShipmentStatusStoredDto } from '../shipmentStatus.stored.dto';
-import { ShipmentStoredDto } from '../shipment.stored.dto';
 import { ShipmentStatus } from '../../../domain/entities/shipmentStatus.entity';
+import { ShipmentStatusFactory } from '../../../domain/factories/shipmentStatus.factory';
 
 export class ShipmentStatusStoredDtoMapper {
   toShipmentStatus(
     shipmentStatusStoredDto: ShipmentStatusStoredDto,
   ): ShipmentStatus {
-    return {
+    return new ShipmentStatusFactory().createShipmentStatus({
       id: shipmentStatusStoredDto.id,
       type: shipmentStatusStoredDto.type,
       date: shipmentStatusStoredDto.date,
-    };
+    });
   }
 
   fromShipmentStatus(shipmentStatus: ShipmentStatus): ShipmentStatusStoredDto {

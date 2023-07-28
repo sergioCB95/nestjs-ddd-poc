@@ -40,7 +40,7 @@ export class ShipmentService {
         new ShipmentStatusFactory().createNewShipmentStatus(status),
       ],
     });
-    await this.shipmentRepository.updateLastStatus(shipment);
+    await this.shipmentRepository.updateLastStatus(shipmentUpdated);
     return new UpdatedTupleFactory<Shipment>().build(shipment, shipmentUpdated);
   }
 }

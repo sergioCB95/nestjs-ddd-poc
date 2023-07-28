@@ -9,7 +9,7 @@ export class ShipmentFactory {
   createShipment = ({ id, orderId, statuses }: ShipmentInput): Shipment => ({
     id,
     orderId,
-    statuses,
+    statuses: statuses.sort((a, b) => a.date.getTime() - b.date.getTime()),
   });
 
   createNewShipment = (orderId: string): Shipment =>
