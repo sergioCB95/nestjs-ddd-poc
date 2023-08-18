@@ -1,18 +1,14 @@
-import { AmqpEventSubscriber } from '../../commons/application/amqp.event.subscriber';
-import { Injectable } from '@nestjs/common';
-import { AsyncApi, AsyncApiSub } from 'nestjs-asyncapi';
+import { Controller } from '@nestjs/common';
+import { AsyncApiSub } from 'nestjs-asyncapi';
 import { ShipmentService } from '../domain/shipment.service';
 import { OrderUpdatedTuple } from '../../order/domain/aggregators/orderUpdatedTuple.aggregate';
 import { OrderStatus } from '../../order/domain/entities/orderStatus.entity';
 import { OrderEvents } from '../../order/domain/events/order.events';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
-@Injectable()
-@AsyncApi()
+@Controller()
 export class ShipmentSubscriber {
-  constructor(
-    private readonly amqpEventSubscriber: AmqpEventSubscriber,
-    private readonly shipmentService: ShipmentService,
-  ) {}
+  constructor(private readonly shipmentService: ShipmentService) {}
 
   @AsyncApiSub({
     channel: 'nestjs-ddd-poc.v1.order.updated',
@@ -22,14 +18,10 @@ export class ShipmentSubscriber {
   })
   async orderUpdatedSubscription() {}
 
-  async onModuleInit() {
-    await this.amqpEventSubscriber.subscribe<OrderUpdatedTuple>(
-      OrderEvents.Updated,
-      async (data) => {
-        if (data.old.status === OrderStatus.PAID) {
-          await this.shipmentService.create(data.old.id);
-        }
-      },
-    );
+  @EventPattern(OrderEvents.Updated)
+  async echo(@Payload() data: OrderUpdatedTuple) {
+    if (data.old.status === OrderStatus.PAID) {
+      await this.shipmentService.create(data.old.id);
+    }
   }
 }

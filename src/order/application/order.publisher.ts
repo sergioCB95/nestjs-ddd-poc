@@ -1,16 +1,16 @@
-import { AmqpService } from '../../commons/infrastructure/amqp.service';
 import { Injectable } from '@nestjs/common';
-import { AmqpEventPublisher } from '../../commons/application/amqp.event.publisher';
 import { OrderEvents } from '../domain/events/order.events';
 import { AsyncApiPub, AsyncApi } from 'nestjs-asyncapi';
 import { CreateOrderEventDTO } from './dtos/publisher/createOrderEvent.dto';
 import { UpdateOrderEventDto } from './dtos/publisher/updateOrderEvent.dto';
+import { RascalEventPublisher } from '../../commons/application/rascal.event.publisher';
+import { RascalClient } from '../../commons/infrastructure/rascal.client';
 
 @Injectable()
 @AsyncApi()
-export class OrderPublisher extends AmqpEventPublisher {
-  constructor(amqpService: AmqpService) {
-    super(amqpService);
+export class OrderPublisher extends RascalEventPublisher {
+  constructor(protected readonly rascalClient: RascalClient) {
+    super(rascalClient);
   }
 
   @AsyncApiPub({

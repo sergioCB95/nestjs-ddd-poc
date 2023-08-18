@@ -3,12 +3,12 @@ import { PrismaService } from './infrastructure/prisma.service';
 import { AmqpService } from './infrastructure/amqp.service';
 import { ConfigModule } from '@nestjs/config';
 import config from './config';
-import { AmqpEventSubscriber } from './application/amqp.event.subscriber';
+import { RascalClient } from './infrastructure/rascal.client';
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [config] })],
   controllers: [],
-  providers: [PrismaService, AmqpService, AmqpEventSubscriber],
-  exports: [PrismaService, AmqpService, AmqpEventSubscriber],
+  providers: [PrismaService, AmqpService, RascalClient],
+  exports: [PrismaService, AmqpService, RascalClient],
 })
 export class CommonsModule {}

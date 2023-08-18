@@ -3,15 +3,15 @@ import { BrokerAsPromised as Broker } from 'rascal';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AmqpService implements OnModuleInit {
+export class AmqpService {
   private broker: Broker;
   private readonly amqpUrl: string;
 
-  constructor(private configService: ConfigService) {
-    this.amqpUrl = this.configService.get<string>('amqp.url');
+  constructor() {
+    this.amqpUrl = 'amqp://localhost:5672';
   }
 
-  private async createMQProducer() {
+  async createBroker() {
     this.broker = await Broker.create({
       vhosts: {
         '/': {
@@ -67,10 +67,6 @@ export class AmqpService implements OnModuleInit {
       },
     });
     this.broker.on('error', console.error);
-  }
-
-  async onModuleInit() {
-    await this.createMQProducer();
   }
 
   async publish(event: string, message: any) {

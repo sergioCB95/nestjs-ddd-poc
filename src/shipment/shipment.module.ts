@@ -8,14 +8,13 @@ import { ShipmentController } from './application/shipment.controller';
 
 @Module({
   imports: [CommonsModule],
-  controllers: [ShipmentController],
+  controllers: [ShipmentController, ShipmentSubscriber],
   providers: [
     ShipmentService,
     {
       provide: ShipmentRepository,
       useClass: ShipmentPrismaRepository,
     },
-    ShipmentSubscriber,
   ],
 })
 export class ShipmentModule {}
