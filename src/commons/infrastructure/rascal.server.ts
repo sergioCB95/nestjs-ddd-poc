@@ -1,6 +1,6 @@
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { isObservable } from 'rxjs';
-import { AmqpService } from './infrastructure/amqp.service';
+import { AmqpService } from './amqp.service';
 export class RascalServer extends Server implements CustomTransportStrategy {
   constructor() {
     super();
