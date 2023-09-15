@@ -15,6 +15,9 @@ import { Order } from '../domain/aggregators/order.aggregate';
 import { UpdateOrderDTOMapper } from './dtos/controller/mappers/updateOrder.dto.mapper';
 import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 import { ApiTags } from '@nestjs/swagger';
+import { AsyncApiPub } from 'nestjs-asyncapi';
+import { CreateOrderEventDTO } from './dtos/publisher/createOrderEvent.dto';
+import { UpdateOrderEventDto } from './dtos/publisher/updateOrderEvent.dto';
 
 @ApiTags('order')
 @Controller('order')
@@ -31,11 +34,23 @@ export class OrderController {
     return this.orderService.getAll();
   }
 
+  @AsyncApiPub({
+    channel: 'nestjs-ddd-poc.v1.order.created',
+    message: {
+      payload: CreateOrderEventDTO,
+    },
+  })
   @Post()
   save(@Body() order: CreateOrderDTO): Promise<Order> {
     return this.orderService.save(new CreateOrderDTOMapper().toNewOrder(order));
   }
 
+  @AsyncApiPub({
+    channel: 'nestjs-ddd-poc.v1.order.updated',
+    message: {
+      payload: UpdateOrderEventDto,
+    },
+  })
   @Put()
   update(@Body() order: UpdateOrderDTO): Promise<OrderUpdatedTuple> {
     return this.orderService.update(

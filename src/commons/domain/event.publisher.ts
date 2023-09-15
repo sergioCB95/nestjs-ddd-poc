@@ -1,7 +1,7 @@
 import { Event } from './event';
 
 export interface IntegrationEventConfig {
-  eventName: string;
+  publicationId: string;
   mappingFunction?: (data: any) => any;
 }
 
@@ -18,7 +18,7 @@ export abstract class EventPublisher {
       ? integrationEventConfig.mappingFunction(event.data)
       : event.data;
     return this.publishEvent(
-      integrationEventConfig.eventName,
+      integrationEventConfig.publicationId,
       integrationEventData,
     );
   }
