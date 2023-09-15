@@ -4,11 +4,12 @@ import { AsyncApiModule } from './commons/application/asyncApi.module';
 import { OpenApiModule } from './commons/application/openApi.module';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import { RascalServer } from './commons/infrastructure/rascal.server';
+import config from './commons/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.connectMicroservice<MicroserviceOptions>({
-    strategy: new RascalServer(),
+    strategy: new RascalServer(config().rascal),
   });
 
   new OpenApiModule().setup(app);

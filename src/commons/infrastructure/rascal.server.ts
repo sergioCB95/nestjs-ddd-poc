@@ -2,13 +2,15 @@ import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { isObservable } from 'rxjs';
 import { AmqpService } from './amqp.service';
 export class RascalServer extends Server implements CustomTransportStrategy {
-  constructor() {
+  config;
+  constructor(config: any = {}) {
     super();
+    this.config = config;
   }
 
   async listen(callback: () => void) {
     const amqpService = new AmqpService();
-    await amqpService.createBroker();
+    await amqpService.createBroker(this.config);
     for await (let [pattern, handler] of this.messageHandlers.entries()) {
       const subscription = await amqpService.subscribe(pattern);
       subscription

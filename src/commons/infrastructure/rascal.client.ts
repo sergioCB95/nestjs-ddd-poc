@@ -1,15 +1,19 @@
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
 import { AmqpService } from './amqp.service';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RascalClient extends ClientProxy {
-  constructor(protected readonly amqpService: AmqpService) {
+  constructor(
+    protected readonly amqpService: AmqpService,
+    protected readonly configService: ConfigService,
+  ) {
     super();
   }
 
   async connect(): Promise<any> {
-    await this.amqpService.createBroker();
+    await this.amqpService.createBroker(this.configService.get('rascal'));
   }
   async close() {}
   async dispatchEvent({ pattern, data }: ReadPacket): Promise<any> {
