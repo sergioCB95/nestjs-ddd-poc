@@ -1,6 +1,6 @@
-import { RascalServer } from './rascal.server';
+import { RascalServer } from '../../rascal/rascal.server';
 import { isObservable } from 'rxjs';
-import { BaseRascalService } from './base.rascal.service';
+import { BaseRascalService } from '../../rascal/base.rascal.service';
 
 export class AppServer extends RascalServer {
   constructor(rascalService: BaseRascalService, config: any = {}) {

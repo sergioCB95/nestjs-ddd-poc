@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRascalService } from './base.rascal.service';
+import { BaseRascalService } from '../../rascal/base.rascal.service';
 
 @Injectable()
 export class RascalService extends BaseRascalService {

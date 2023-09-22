@@ -3,8 +3,8 @@ import { PrismaService } from './infrastructure/prisma.service';
 import { RascalService } from './infrastructure/rascal.service';
 import { ConfigModule } from '@nestjs/config';
 import config from './config';
-import { RascalClient } from './infrastructure/rascal.client';
-import { BaseRascalService } from './infrastructure/base.rascal.service';
+import { RascalClient } from '../rascal/rascal.client';
+import { BaseRascalService } from '../rascal/base.rascal.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [config] })],
