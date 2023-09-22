@@ -1,50 +1,43 @@
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
-import { isObservable } from 'rxjs';
-import { AmqpService } from './amqp.service';
-export class RascalServer extends Server implements CustomTransportStrategy {
-  config;
-  constructor(config: any = {}) {
+import { BaseRascalService } from './base.rascal.service';
+import { BrokerAsPromised as Broker } from 'rascal';
+
+export interface OnMessageConfig {
+  handler: (data: any) => Promise<any>;
+  message: any;
+  content: any;
+  ackOrNack: (err?: any, options?: any) => Promise<void>;
+}
+export abstract class RascalServer
+  extends Server
+  implements CustomTransportStrategy
+{
+  protected broker: Broker;
+
+  constructor(
+    private readonly rascalService: BaseRascalService,
+    private readonly config: any = {},
+  ) {
     super();
     this.config = config;
+    this.rascalService = rascalService;
   }
+  abstract onMessage: (config: OnMessageConfig) => Promise<void>;
+  abstract onSubscriptionError: (err: any) => Promise<void>;
 
   async listen(callback: () => void) {
-    const amqpService = new AmqpService();
-    await amqpService.createBroker(this.config);
-    for await (let [pattern, handler] of this.messageHandlers.entries()) {
-      const subscription = await amqpService.subscribe(pattern);
+    await this.rascalService.createBroker(this.config);
+    await this.rascalService.brokerSetUp();
+    for await (const [pattern, handler] of this.messageHandlers.entries()) {
+      const subscription = await this.rascalService.subscribe(pattern);
       subscription
-        .on('message', async (message, content, ackOrNack) => {
-          const data = JSON.parse(message.content.toString());
-          try {
-            const streamOrResult = await handler(data);
-            if (isObservable(streamOrResult)) {
-              streamOrResult.subscribe();
-            }
-            ackOrNack();
-          } catch (err) {
-            console.error(err);
-            ackOrNack(err, [
-              {
-                strategy: 'republish',
-                defer: 1000,
-                attempts: 10,
-              },
-              {
-                strategy: 'nack',
-              },
-            ]);
-          }
-        })
-        .on('error', async (err) => {
-          console.error(err);
-        });
+        .on('message', (message, content, ackOrNack) =>
+          this.onMessage({ handler, message, content, ackOrNack }),
+        )
+        .on('error', this.onSubscriptionError);
     }
     callback();
   }
 
-  /**
-   * This method is triggered on application shutdown.
-   */
   close() {}
 }

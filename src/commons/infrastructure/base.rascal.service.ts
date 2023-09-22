@@ -1,14 +1,12 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
 import { BrokerAsPromised as Broker } from 'rascal';
-import { ConfigService } from '@nestjs/config';
 
-@Injectable()
-export class AmqpService {
-  private broker: Broker;
+export abstract class BaseRascalService {
+  protected broker: Broker;
 
-  async createBroker(config: any = {}) {
+  abstract brokerSetUp(): Promise<void>;
+
+  async createBroker(config: any = {}): Broker {
     this.broker = await Broker.create(config);
-    this.broker.on('error', console.error);
   }
 
   async publish(event: string, message: any) {
