@@ -5,9 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import config from './config';
 import { RascalClient } from '../rascal/rascal.client';
 import { BaseRascalService } from '../rascal/base.rascal.service';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
-  imports: [ConfigModule.forRoot({ load: [config] })],
+  imports: [ConfigModule.forRoot({ load: [config] }), LoggerModule.forRoot()],
   controllers: [],
   providers: [
     PrismaService,

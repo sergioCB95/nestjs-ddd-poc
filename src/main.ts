@@ -6,12 +6,15 @@ import { MicroserviceOptions } from '@nestjs/microservices';
 import config from './commons/config';
 import { AppServer } from './commons/infrastructure/app.server';
 import { RascalService } from './commons/infrastructure/rascal.service';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.connectMicroservice<MicroserviceOptions>({
     strategy: new AppServer(new RascalService(), config().rascal),
   });
+
+  app.useLogger(app.get(Logger));
 
   new OpenApiModule().setup(app);
   await new AsyncApiModule().setup(app);
