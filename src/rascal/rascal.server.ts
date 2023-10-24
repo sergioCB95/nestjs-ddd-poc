@@ -1,7 +1,6 @@
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
-import { BaseRascalService } from './base.rascal.service';
+import { RascalService } from './rascal.service';
 import { BrokerAsPromised as Broker } from 'rascal';
-import { Logger } from '@nestjs/common';
 
 export interface OnMessageConfig {
   handler: (data: any) => Promise<any>;
@@ -14,10 +13,9 @@ export abstract class RascalServer
   implements CustomTransportStrategy
 {
   protected broker: Broker;
-  private readonly _logger = new Logger(RascalServer.name);
 
   constructor(
-    private readonly rascalService: BaseRascalService,
+    private readonly rascalService: RascalService,
     private readonly config: any = {},
   ) {
     super();
@@ -28,8 +26,7 @@ export abstract class RascalServer
   abstract onSubscriptionError: (err: any) => Promise<void>;
 
   async listen(callback: () => void) {
-    await this.rascalService.createBroker(this.config);
-    await this.rascalService.brokerSetUp();
+    await this.rascalService.connect(this.config);
     for await (const [pattern, handler] of this.messageHandlers.entries()) {
       const subscription = await this.rascalService.subscribe(pattern);
       subscription
@@ -37,7 +34,7 @@ export abstract class RascalServer
           this.onMessage({ handler, message, content, ackOrNack }),
         )
         .on('error', this.onSubscriptionError);
-      this._logger.log(`Mapped {${pattern}} subscription`);
+      this.logger.log(`Mapped {${pattern}} subscription`);
     }
     callback();
   }

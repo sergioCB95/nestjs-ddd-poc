@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from './infrastructure/prisma.service';
-import { RascalService } from './infrastructure/rascal.service';
+import { CustomRascalService } from './infrastructure/rascal.service';
+import { CustomRascalClient } from './infrastructure/rascal.client';
 import { ConfigModule } from '@nestjs/config';
 import config from './config';
 import { RascalClient } from '../rascal/rascal.client';
-import { BaseRascalService } from '../rascal/base.rascal.service';
+import { RascalService } from '../rascal/rascal.service';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({
@@ -12,8 +13,8 @@ import { LoggerModule } from 'nestjs-pino';
   controllers: [],
   providers: [
     PrismaService,
-    { provide: BaseRascalService, useClass: RascalService },
-    RascalClient,
+    { provide: RascalService, useClass: CustomRascalService },
+    { provide: RascalClient, useClass: CustomRascalClient },
   ],
   exports: [PrismaService, RascalClient],
 })

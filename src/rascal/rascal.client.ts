@@ -1,34 +1,55 @@
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
-import { BaseRascalService } from './base.rascal.service';
+import { RascalService } from './rascal.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 
 @Injectable()
-export class RascalClient extends ClientProxy {
-  private readonly _logger = new Logger(RascalClient.name);
+export abstract class RascalClient extends ClientProxy {
+  protected readonly logger = new Logger(RascalClient.name);
   constructor(
-    protected readonly rascalService: BaseRascalService,
+    protected readonly rascalService: RascalService,
     protected readonly configService: ConfigService,
   ) {
     super();
   }
 
+  protected abstract onPublicationError(err: any, messageId: string): void;
+
   async connect(): Promise<any> {
-    await this.rascalService.createBroker(this.configService.get('rascal'));
-    await this.rascalService.brokerSetUp();
+    const broker = await this.rascalService.connect(
+      this.configService.get('rascal'),
+    );
+    return broker;
   }
+
   async close() {
     await this.rascalService.shutdown();
   }
-  async dispatchEvent({ pattern, data }: ReadPacket): Promise<any> {
-    this._logger.verbose(`Dispatching event {${pattern}}`);
-    await this.rascalService.publish(pattern, data);
+
+  private async publishEvent({ pattern, data }: ReadPacket): Promise<any> {
+    try {
+      const publication = await this.rascalService.publish(pattern, data);
+      publication.on('error', this.onPublicationError);
+      return publication;
+    } catch (err) {
+      throw new Error(`Rascal config error: ${err.message}`);
+    }
   }
+
+  async dispatchEvent({ pattern, data }: ReadPacket): Promise<any> {
+    this.logger.verbose(`Dispatching event {${pattern}}`);
+    return await this.publishEvent({ pattern, data });
+  }
+
   publish(
-    packet: ReadPacket,
+    { pattern, data }: ReadPacket,
     callback: (packet: WritePacket) => void,
   ): () => void {
-    return () => console.log('teardown');
+    this.logger.verbose(`Dispatching event {${pattern}}`);
+    this.publishEvent({ pattern, data })
+      .then(callback)
+      .catch((err) => callback({ err }));
+    return () => undefined;
   }
 }

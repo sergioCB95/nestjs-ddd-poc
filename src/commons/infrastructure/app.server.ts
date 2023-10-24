@@ -1,9 +1,9 @@
 import { RascalServer } from '../../rascal/rascal.server';
 import { isObservable } from 'rxjs';
-import { BaseRascalService } from '../../rascal/base.rascal.service';
+import { RascalService } from '../../rascal/rascal.service';
 
 export class AppServer extends RascalServer {
-  constructor(rascalService: BaseRascalService, config: any = {}) {
+  constructor(rascalService: RascalService, config: any = {}) {
     super(rascalService, config);
   }
 
@@ -16,7 +16,7 @@ export class AppServer extends RascalServer {
       }
       ackOrNack();
     } catch (err) {
-      console.error(err);
+      this.logger.error(err);
       ackOrNack(err, [
         {
           strategy: 'republish',
@@ -30,5 +30,5 @@ export class AppServer extends RascalServer {
     }
   };
 
-  onSubscriptionError = async (err: any) => console.error(err);
+  onSubscriptionError = async (err: any) => this.logger.error(err);
 }
