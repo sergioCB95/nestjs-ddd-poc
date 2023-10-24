@@ -1,24 +1,37 @@
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
 import { RascalService } from './rascal.service';
-import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 
-@Injectable()
-export abstract class RascalClient extends ClientProxy {
+export type RascalClientOptions = {
+  onPublicationError?: (err: any, messageId: string) => void;
+  configKey?: string;
+};
+
+const defaultOnPublicationError =
+  (logger) =>
+  async (err: any, messageId: string): Promise<void> => {
+    logger.error('Publisher error', err, messageId);
+  };
+
+export class RascalClient extends ClientProxy {
+  private onPublicationError: (err: any, messageId: string) => void;
+  private configKey: string;
   protected readonly logger = new Logger(RascalClient.name);
   constructor(
     protected readonly rascalService: RascalService,
     protected readonly configService: ConfigService,
+    { onPublicationError, configKey }: RascalClientOptions = {},
   ) {
     super();
+    this.onPublicationError =
+      onPublicationError ?? defaultOnPublicationError(this.logger);
+    this.configKey = configKey ?? 'rascal';
   }
-
-  protected abstract onPublicationError(err: any, messageId: string): void;
 
   async connect(): Promise<any> {
     const broker = await this.rascalService.connect(
-      this.configService.get('rascal'),
+      this.configService.get(this.configKey),
     );
     return broker;
   }
