@@ -5,6 +5,10 @@ import { ShipmentRepository } from './domain/shipment.repository';
 import { ShipmentPrismaRepository } from './infrastructure/shipment.prisma.repository';
 import { ShipmentSubscriber } from './application/shipment.subscriber';
 import { ShipmentController } from './application/shipment.controller';
+import {
+  ShipmentEventPublisher,
+  ShipmentPublisher,
+} from './application/shipment.publisher';
 
 @Module({
   imports: [CommonsModule],
@@ -14,6 +18,10 @@ import { ShipmentController } from './application/shipment.controller';
     {
       provide: ShipmentRepository,
       useClass: ShipmentPrismaRepository,
+    },
+    {
+      provide: ShipmentEventPublisher,
+      useClass: ShipmentPublisher,
     },
   ],
 })

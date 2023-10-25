@@ -16,12 +16,10 @@ export class ShipmentSubscriber {
       payload: OrderUpdatedTuple,
     },
   })
-  async orderUpdatedSubscription() {}
-
   @EventPattern(OrderEvents.Updated)
-  async echo(@Payload() data: OrderUpdatedTuple) {
-    if (data.old.status === OrderStatus.PAID) {
-      await this.shipmentService.create(data.old.id);
+  async orderUpdatedSubscription(@Payload() data: OrderUpdatedTuple) {
+    if (data.new.status === OrderStatus.PAID) {
+      await this.shipmentService.create(data.new.id);
     }
   }
 }

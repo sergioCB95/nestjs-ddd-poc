@@ -8,10 +8,11 @@ import {
   OrderEventPublisher,
   OrderPublisher,
 } from './application/order.publisher';
+import { OrderSubscriber } from './application/order.subscriber';
 
 @Module({
   imports: [CommonsModule],
-  controllers: [OrderController],
+  controllers: [OrderController, OrderSubscriber],
   providers: [
     OrderService,
     {

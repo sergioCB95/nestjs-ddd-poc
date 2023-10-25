@@ -6,12 +6,19 @@ import { ShipmentFactory } from './factories/shipment.factory';
 import { ShipmentStatusFactory } from './factories/shipmentStatus.factory';
 import { ShipmentUpdatedTuple } from './aggregators/shipmentUpdatedTuple.aggregate';
 import { UpdatedTupleFactory } from '../../commons/domain/updatedTuple.factory';
+import {
+  ShipmentEventPublisher,
+  ShipmentPublisher,
+} from '../application/shipment.publisher';
+import { ShipmentStatusUpdatedEvent } from './events/shipment.events';
 
 @Injectable()
 export class ShipmentService {
   constructor(
     @Inject(ShipmentRepository)
     private readonly shipmentRepository: ShipmentRepository,
+    @Inject(ShipmentEventPublisher)
+    private readonly shipmentPublisher: ShipmentPublisher,
   ) {}
   async getAll(): Promise<Shipment[]> {
     return await this.shipmentRepository.getAll();
@@ -41,6 +48,12 @@ export class ShipmentService {
       ],
     });
     await this.shipmentRepository.updateLastStatus(shipmentUpdated);
-    return new UpdatedTupleFactory<Shipment>().build(shipment, shipmentUpdated);
+    const updatedShipment = new UpdatedTupleFactory<Shipment>().build(
+      shipment,
+      shipmentUpdated,
+    );
+    await this.shipmentPublisher.publish(
+      new ShipmentStatusUpdatedEvent(updatedShipment),
+    );
   }
 }
