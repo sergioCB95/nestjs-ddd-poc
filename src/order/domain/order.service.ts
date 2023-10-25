@@ -8,6 +8,7 @@ import { OrderUpdatedTuple } from './aggregators/orderUpdatedTuple.aggregate';
 import { EventPublisher } from '../../commons/domain/event.publisher';
 import { OrderEventPublisher } from '../application/order.publisher';
 import { OrderCreatedEvent, OrderUpdatedEvent } from './events/order.events';
+import { OrderStatus } from './entities/orderStatus.entity';
 
 @Injectable()
 export class OrderService {
@@ -35,6 +36,16 @@ export class OrderService {
     const order = new OrderFactory().createUpdatedOrder(updatedOrder);
     const orderUpdatedTuple = await this.orderRepository.update(order);
     await this.orderPublisher.publish(new OrderUpdatedEvent(orderUpdatedTuple));
+    return orderUpdatedTuple;
+  }
+
+  async updateStatus(
+    id: string,
+    status: OrderStatus,
+  ): Promise<OrderUpdatedTuple> {
+    const order = await this.get(id);
+    order.status = status;
+    const orderUpdatedTuple = await this.update(order);
     return orderUpdatedTuple;
   }
 

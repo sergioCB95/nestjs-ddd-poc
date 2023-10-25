@@ -9,7 +9,8 @@ import {
 } from '@nestjs/common';
 import { OrderService } from '../domain/order.service';
 import { CreateOrderDTOMapper } from './dtos/controller/mappers/createOrder.dto.mapper';
-import { UpdateOrderDTO } from './dtos/controller/updateOrder.dto';
+import { UpdateOrderStatusDTO } from './dtos/controller/UpdateOrderStatus.dto';
+import { UpdateOrderDTO } from './dtos/controller/UpdateOrder.dto';
 import { CreateOrderDTO } from './dtos/controller/createOrder.dto';
 import { Order } from '../domain/aggregators/order.aggregate';
 import { UpdateOrderDTOMapper } from './dtos/controller/mappers/updateOrder.dto.mapper';
@@ -56,6 +57,19 @@ export class OrderController {
     return this.orderService.update(
       new UpdateOrderDTOMapper().toUpdateOrder(order),
     );
+  }
+
+  @AsyncApiPub({
+    channel: 'nestjs-ddd-poc.v1.order.updated',
+    message: {
+      payload: UpdateOrderEventDto,
+    },
+  })
+  @Put('status')
+  updateStatus(
+    @Body() { id, status }: UpdateOrderStatusDTO,
+  ): Promise<OrderUpdatedTuple> {
+    return this.orderService.updateStatus(id, status);
   }
 
   @Delete(':id')

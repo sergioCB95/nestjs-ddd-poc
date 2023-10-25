@@ -5,6 +5,7 @@ import { ShipmentUpdatedTuple } from '../../shipment/domain/aggregators/shipment
 import { OrderEvents } from '../domain/events/order.events';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { ShipmentStatusType } from '@prisma/client';
+import { OrderStatus } from '../domain/entities/orderStatus.entity';
 
 @Controller()
 export class OrderSubscriber {
@@ -24,7 +25,7 @@ export class OrderSubscriber {
       data.new.statuses[data.new.statuses.length - 1].type ===
       ShipmentStatusType.READY
     ) {
-      console.log('Received shipment status', data.new);
+      await this.orderService.updateStatus(data.new.id, OrderStatus.SHIPPED);
     }
   }
 }
