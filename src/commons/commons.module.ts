@@ -23,7 +23,7 @@ import { LoggerModule } from 'nestjs-pino';
         rascalService: RascalService,
         configService: ConfigService,
       ) => {
-        return new RascalClient(rascalService, configService);
+        return new RascalClient({ rascalService, configService });
       },
       inject: [RascalService, ConfigService],
     },

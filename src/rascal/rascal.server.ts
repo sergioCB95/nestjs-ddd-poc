@@ -1,24 +1,30 @@
-import { CustomTransportStrategy, Server } from '@nestjs/microservices';
+import {
+  CustomTransportStrategy,
+  Server,
+  Deserializer,
+} from '@nestjs/microservices';
 import { RascalService } from './rascal.service';
-import { BrokerAsPromised as Broker } from 'rascal';
 import { isObservable } from 'rxjs';
+import { InboundMessageIdentityDeserializer } from './inbound-message-entity';
 
 export type OnMessageConfig = {
   handler: (data: any) => Promise<any>;
-  message: any;
+  data: any;
   content: any;
   ackOrNack: (err?: any, options?: any) => Promise<void>;
 };
 
 export type RascalServerOptions = {
+  rascalService: RascalService;
+  config: any;
+  deserializer?: Deserializer;
   onMessage?: (config: OnMessageConfig) => Promise<void>;
   onSubscriptionError?: (err: any) => Promise<void>;
 };
 
 const defaultOnMessage =
   (logger) =>
-  async ({ handler, message, ackOrNack }) => {
-    const data = JSON.parse(message.content.toString());
+  async ({ handler, data, ackOrNack }) => {
     try {
       const streamOrResult = await handler(data);
       if (isObservable(streamOrResult)) {
@@ -44,21 +50,27 @@ const defaultOnSubscriptionError = (logger) => async (err: any) =>
   logger.error(err);
 
 export class RascalServer extends Server implements CustomTransportStrategy {
-  protected broker: Broker;
-  private onMessage: (config: OnMessageConfig) => Promise<void>;
-  private onSubscriptionError: (err: any) => Promise<void>;
+  private readonly config: any;
+  private readonly rascalService: RascalService;
+  private readonly onMessage: (config: OnMessageConfig) => Promise<void>;
+  private readonly onSubscriptionError: (err: any) => Promise<void>;
 
-  constructor(
-    private readonly rascalService: RascalService,
-    private readonly config: any = {},
-    { onMessage, onSubscriptionError }: RascalServerOptions = {},
-  ) {
+  constructor({
+    rascalService,
+    config = {},
+    deserializer,
+    onMessage,
+    onSubscriptionError,
+  }: RascalServerOptions) {
     super();
     this.config = config;
     this.rascalService = rascalService;
     this.onMessage = onMessage ?? defaultOnMessage(this.logger);
     this.onSubscriptionError =
       onSubscriptionError ?? defaultOnSubscriptionError(this.logger);
+    this.initializeDeserializer(
+      deserializer ?? new InboundMessageIdentityDeserializer(),
+    );
   }
 
   async listen(callback: () => void) {
@@ -66,9 +78,15 @@ export class RascalServer extends Server implements CustomTransportStrategy {
     for await (const [pattern, handler] of this.messageHandlers.entries()) {
       const subscription = await this.rascalService.subscribe(pattern);
       subscription
-        .on('message', (message, content, ackOrNack) =>
-          this.onMessage({ handler, message, content, ackOrNack }),
-        )
+        .on('message', (message, content, ackOrNack) => {
+          const data = this.deserializer.deserialize(message);
+          this.onMessage({
+            handler,
+            data,
+            content,
+            ackOrNack,
+          });
+        })
         .on('error', this.onSubscriptionError);
       this.logger.log(`Mapped {${pattern}} subscription`);
     }

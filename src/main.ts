@@ -11,7 +11,10 @@ import { Logger } from 'nestjs-pino';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.connectMicroservice<MicroserviceOptions>({
-    strategy: new RascalServer(new RascalService(), config().rascal),
+    strategy: new RascalServer({
+      rascalService: new RascalService(),
+      config: config().rascal,
+    }),
   });
 
   app.useLogger(app.get(Logger));

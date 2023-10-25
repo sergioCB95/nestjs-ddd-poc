@@ -15,9 +15,9 @@ const defaultOnConnectionError = (logger) => async (err: any) => {
 };
 export class RascalService {
   broker: Broker;
-  protected readonly logger = new Logger(RascalService.name);
-  brokerSetUp: () => Promise<void>;
-  onConnectionError: (err: any) => Promise<void>;
+  private readonly logger = new Logger(RascalService.name);
+  private readonly brokerSetUp: () => Promise<void>;
+  private readonly onConnectionError: (err: any) => Promise<void>;
 
   constructor({ brokerSetUp, onConnectionError }: RascalServiceOptions = {}) {
     this.brokerSetUp = brokerSetUp ?? defaultBrokerSetUp(this.logger);

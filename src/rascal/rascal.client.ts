@@ -1,9 +1,19 @@
-import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
+import {
+  ClientProxy,
+  ReadPacket,
+  WritePacket,
+  Serializer,
+} from '@nestjs/microservices';
+import { BrokerAsPromised as Broker } from 'rascal';
 import { RascalService } from './rascal.service';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
+import { OutboundMessageIdentitySerializer } from './outbound-message-identity.serializer';
 
 export type RascalClientOptions = {
+  readonly rascalService: RascalService;
+  readonly configService: ConfigService;
+  readonly serializer?: Serializer;
   onPublicationError?: (err: any, messageId: string) => void;
   configKey?: string;
 };
@@ -14,34 +24,50 @@ const defaultOnPublicationError =
     logger.error('Publisher error', err, messageId);
   };
 
+const defaultConfigKey = 'rascal';
+
 export class RascalClient extends ClientProxy {
-  private onPublicationError: (err: any, messageId: string) => void;
-  private configKey: string;
-  protected readonly logger = new Logger(RascalClient.name);
-  constructor(
-    protected readonly rascalService: RascalService,
-    protected readonly configService: ConfigService,
-    { onPublicationError, configKey }: RascalClientOptions = {},
-  ) {
+  private broker: Broker;
+  private readonly rascalService: RascalService;
+  private readonly configService: ConfigService;
+  private readonly onPublicationError: (err: any, messageId: string) => void;
+  private readonly configKey: string;
+  private readonly logger = new Logger(RascalClient.name);
+
+  constructor({
+    rascalService,
+    configService,
+    serializer,
+    onPublicationError,
+    configKey,
+  }: RascalClientOptions) {
     super();
+    this.rascalService = rascalService;
+    this.configService = configService;
     this.onPublicationError =
       onPublicationError ?? defaultOnPublicationError(this.logger);
-    this.configKey = configKey ?? 'rascal';
+    this.configKey = configKey ?? defaultConfigKey;
+    this.initializeSerializer(
+      serializer ?? new OutboundMessageIdentitySerializer(),
+    );
   }
 
   async connect(): Promise<any> {
-    const broker = await this.rascalService.connect(
-      this.configService.get(this.configKey),
-    );
-    return broker;
+    if (!this.broker) {
+      this.broker = await this.rascalService.connect(
+        this.configService.get(this.configKey),
+      );
+    }
+    return this.broker;
   }
 
   async close() {
     await this.rascalService.shutdown();
   }
 
-  private async publishEvent({ pattern, data }: ReadPacket): Promise<any> {
+  private async publishEvent(packet: ReadPacket): Promise<any> {
     try {
+      const { pattern, data } = this.serializer.serialize(packet);
       const publication = await this.rascalService.publish(pattern, data);
       publication.on('error', this.onPublicationError);
       return publication;
@@ -50,17 +76,17 @@ export class RascalClient extends ClientProxy {
     }
   }
 
-  async dispatchEvent({ pattern, data }: ReadPacket): Promise<any> {
-    this.logger.verbose(`Dispatching event {${pattern}}`);
-    return await this.publishEvent({ pattern, data });
+  async dispatchEvent(packet: ReadPacket): Promise<any> {
+    this.logger.verbose(`Dispatching event {${packet.pattern}}`);
+    return await this.publishEvent(packet);
   }
 
   publish(
-    { pattern, data }: ReadPacket,
+    packet: ReadPacket,
     callback: (packet: WritePacket) => void,
   ): () => void {
-    this.logger.verbose(`Dispatching event {${pattern}}`);
-    this.publishEvent({ pattern, data })
+    this.logger.verbose(`Dispatching event {${packet.pattern}}`);
+    this.publishEvent(packet)
       .then(callback)
       .catch((err) => callback({ err }));
     return () => undefined;
