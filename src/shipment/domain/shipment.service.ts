@@ -49,8 +49,8 @@ export class ShipmentService {
     });
     await this.shipmentRepository.updateLastStatus(shipmentUpdated);
     const updatedShipment = new UpdatedTupleFactory<Shipment>().build(
-      shipment,
       shipmentUpdated,
+      shipment,
     );
     await this.shipmentPublisher.publish(
       new ShipmentStatusUpdatedEvent(updatedShipment),

@@ -93,7 +93,7 @@ export class OrderPrismaRepository implements OrderRepository {
     await this.prisma.$transaction([orderUpdate, ...orderItemUpdates]);
     const orderUpdated = await this.getById(order.id);
 
-    return new UpdatedTupleFactory<Order>().build(storedOrder, orderUpdated);
+    return new UpdatedTupleFactory<Order>().build(orderUpdated, storedOrder);
   }
 
   async delete(id: string): Promise<void> {

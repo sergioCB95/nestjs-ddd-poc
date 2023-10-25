@@ -2,10 +2,10 @@ import { Controller } from '@nestjs/common';
 import { AsyncApiSub } from 'nestjs-asyncapi';
 import { OrderService } from '../domain/order.service';
 import { ShipmentUpdatedTuple } from '../../shipment/domain/aggregators/shipmentUpdatedTuple.aggregate';
-import { OrderEvents } from '../domain/events/order.events';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { ShipmentStatusType } from '@prisma/client';
 import { OrderStatus } from '../domain/entities/orderStatus.entity';
+import { ShipmentEvents } from 'src/shipment/domain/events/shipment.events';
 
 @Controller()
 export class OrderSubscriber {
@@ -17,7 +17,7 @@ export class OrderSubscriber {
       payload: ShipmentUpdatedTuple,
     },
   })
-  @EventPattern(OrderEvents.Updated)
+  @EventPattern(ShipmentEvents.StatusUpdated)
   async ShipmentStatusUpdatedSubscription(
     @Payload() data: ShipmentUpdatedTuple,
   ) {
@@ -25,7 +25,10 @@ export class OrderSubscriber {
       data.new.statuses[data.new.statuses.length - 1].type ===
       ShipmentStatusType.READY
     ) {
-      await this.orderService.updateStatus(data.new.id, OrderStatus.SHIPPED);
+      await this.orderService.updateStatus(
+        data.new.orderId,
+        OrderStatus.SHIPPED,
+      );
     }
   }
 }

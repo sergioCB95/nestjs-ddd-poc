@@ -1,4 +1,4 @@
-import { ConsumerDeserializer, IncomingRequest } from '@nestjs/microservices';
+import { ConsumerDeserializer, IncomingEvent } from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
 
 export class InboundMessageIdentityDeserializer
@@ -6,12 +6,15 @@ export class InboundMessageIdentityDeserializer
 {
   private readonly logger = new Logger(InboundMessageIdentityDeserializer.name);
 
-  deserialize(value: any, options?: Record<string, any>): IncomingRequest {
+  deserialize(value: any, options?: Record<string, any>): IncomingEvent {
     this.logger.verbose(
       `<<-- deserializing inbound message:\n${JSON.stringify(
         value,
       )}\n\twith options: ${JSON.stringify(options)}`,
     );
-    return JSON.parse(value.content.toString());
+    return {
+      pattern: options.pattern || '',
+      data: JSON.parse(value.content.toString()),
+    };
   }
 }

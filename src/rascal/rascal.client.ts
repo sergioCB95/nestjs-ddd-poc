@@ -47,9 +47,9 @@ export class RascalClient extends ClientProxy {
     this.onPublicationError =
       onPublicationError ?? defaultOnPublicationError(this.logger);
     this.configKey = configKey ?? defaultConfigKey;
-    this.initializeSerializer(
-      serializer ?? new OutboundMessageIdentitySerializer(),
-    );
+    this.initializeSerializer({
+      serializer: serializer ?? new OutboundMessageIdentitySerializer(),
+    });
   }
 
   async connect(): Promise<any> {

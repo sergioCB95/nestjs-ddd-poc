@@ -8,7 +8,7 @@ export interface OrderRepository {
   getAll(): Promise<Order[]>;
   save(order: NewOrder): Promise<Order>;
   update(order: UpdatedOrder): Promise<OrderUpdatedTuple>;
-  delete(id: String): Promise<void>;
+  delete(id: string): Promise<void>;
 }
 
 export const OrderRepository = Symbol('OrderRepository');
