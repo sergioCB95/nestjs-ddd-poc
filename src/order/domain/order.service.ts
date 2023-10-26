@@ -9,6 +9,9 @@ import { EventPublisher } from '../../commons/domain/event.publisher';
 import { OrderEventPublisher } from '../application/order.publisher';
 import { OrderCreatedEvent, OrderUpdatedEvent } from './events/order.events';
 import { OrderStatus } from './entities/orderStatus.entity';
+import { NewOrderItem } from './entities/newOrderItem.entity';
+import { OrderItemFactory } from './factories/orderItem.factory';
+import { OrderItem } from './entities/orderItem.entity';
 
 @Injectable()
 export class OrderService {
@@ -51,5 +54,51 @@ export class OrderService {
 
   async delete(id: string): Promise<void> {
     return this.orderRepository.delete(id);
+  }
+
+  async checkout(id: string, address: string): Promise<OrderUpdatedTuple> {
+    const order = await this.get(id);
+    order.address = address;
+    order.status = OrderStatus.PAID;
+    const orderUpdatedTuple = await this.update(order);
+    return orderUpdatedTuple;
+  }
+
+  async addItem(
+    id: string,
+    newOrderItem: NewOrderItem,
+  ): Promise<OrderUpdatedTuple> {
+    const order = await this.get(id);
+    const orderItem = new OrderItemFactory().createNewOrderItem(newOrderItem);
+    order.items.push(orderItem);
+    const orderUpdatedTuple = await this.update(order);
+    return orderUpdatedTuple;
+  }
+
+  async updateItem(
+    id: string,
+    orderItem: OrderItem,
+  ): Promise<OrderUpdatedTuple> {
+    const order = await this.get(id);
+    const foundIndex = order.items.findIndex(
+      (item) => item.id === orderItem.id,
+    );
+    if (foundIndex === -1) {
+      throw new Error('Order item not found');
+    }
+    order.items[foundIndex] = orderItem;
+    const orderUpdatedTuple = await this.update(order);
+    return orderUpdatedTuple;
+  }
+
+  async deleteItem(id: string, itemId: string): Promise<OrderUpdatedTuple> {
+    const order = await this.get(id);
+    const filteredItems = order.items.filter((item) => item.id !== itemId);
+    if (order.items.length === filteredItems.length) {
+      throw new Error('Order item not found');
+    }
+    order.items = filteredItems;
+    const orderUpdatedTuple = await this.update(order);
+    return orderUpdatedTuple;
   }
 }

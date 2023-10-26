@@ -9,6 +9,7 @@ export class UpdateOrderDTOMapper {
     return {
       id: updateOrderDTO.id,
       status: updateOrderDTO.status,
+      address: updateOrderDTO.address,
       items: updateOrderDTO.items.map((item) =>
         isNewUpdateOrderItemDTO(item)
           ? updateOrderItemDTOMapper.toNewOrderItem(item)

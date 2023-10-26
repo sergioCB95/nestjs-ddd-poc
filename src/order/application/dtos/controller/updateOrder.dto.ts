@@ -12,6 +12,10 @@ export class UpdateOrderDTO {
   @Type(() => String)
   status: OrderStatus;
 
+  @ApiProperty()
+  @Type(() => String)
+  address: string;
+
   @ApiProperty({ type: [UpdateOrderItemDTO] })
   items: Array<UpdateOrderItemDTO>;
 }

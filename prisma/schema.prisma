@@ -13,6 +13,7 @@ datasource db {
 model Order {
   id       String      @id @default(uuid())
   status   OrderStatus @default(PENDING)
+  address  String?
   items    OrderItem[]
   Shipment Shipment[]
 }

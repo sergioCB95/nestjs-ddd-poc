@@ -6,14 +6,15 @@ import { OrderFactory } from '../../../domain/factories/order.factory';
 
 export class OrderStoredDtoMapper {
   toOrder(
-    orderDAO: OrderStoredDto,
-    orderItemsDAO: OrderItemStoredDto[] = [],
+    orderDTO: OrderStoredDto,
+    orderItemsDTO: OrderItemStoredDto[] = [],
   ): Order {
     const orderItemStoredDtoMapper = new OrderItemStoredDtoMapper();
     return new OrderFactory().createOrder({
-      id: orderDAO.id,
-      status: orderDAO.status,
-      items: orderItemsDAO.map((item) =>
+      id: orderDTO.id,
+      status: orderDTO.status,
+      address: orderDTO.address,
+      items: orderItemsDTO.map((item) =>
         orderItemStoredDtoMapper.toOrderItem(item),
       ),
     });
@@ -23,6 +24,7 @@ export class OrderStoredDtoMapper {
     return {
       id: order.id,
       status: order.status,
+      address: order.address,
     };
   }
 }
