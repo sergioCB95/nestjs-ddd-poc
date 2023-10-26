@@ -52,3 +52,10 @@ model ShipmentStatus {
   Shipment   Shipment?          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   shipmentId String?
 }
+
+model Product {
+  id       String  @id @default(uuid())
+  name     String
+  price    Decimal @db.Decimal(10, 2)
+  quantity Int
+}
