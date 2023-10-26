@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderEvents } from '../domain/events/order.events';
 import { RascalEventPublisher } from '../../commons/application/rascal.event.publisher';
-import { RascalClient } from '../../rascal/rascal.client';
+import { RascalClient } from '../../rascal/client/rascal.client';
 
 @Injectable()
 export class OrderPublisher extends RascalEventPublisher {

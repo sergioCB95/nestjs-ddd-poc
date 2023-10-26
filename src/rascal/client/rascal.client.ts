@@ -1,30 +1,11 @@
-import {
-  ClientProxy,
-  ReadPacket,
-  WritePacket,
-  Serializer,
-} from '@nestjs/microservices';
+import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
 import { BrokerAsPromised as Broker } from 'rascal';
-import { RascalService } from './rascal.service';
+import { RascalService } from '../service';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { OutboundMessageIdentitySerializer } from './outbound-message-identity.serializer';
-
-export type RascalClientOptions = {
-  readonly rascalService: RascalService;
-  readonly configService: ConfigService;
-  readonly serializer?: Serializer;
-  onPublicationError?: (err: any, messageId: string) => void;
-  configKey?: string;
-};
-
-const defaultOnPublicationError =
-  (logger) =>
-  async (err: any, messageId: string): Promise<void> => {
-    logger.error('Publisher error', err, messageId);
-  };
-
-const defaultConfigKey = 'rascal';
+import { OutboundMessageIdentitySerializer } from './serializer';
+import { RascalClientOptions } from './';
+import { DefaultConfigKey, defaultOnPublicationError } from './defaults';
 
 export class RascalClient extends ClientProxy {
   private broker: Broker;
@@ -46,7 +27,7 @@ export class RascalClient extends ClientProxy {
     this.configService = configService;
     this.onPublicationError =
       onPublicationError ?? defaultOnPublicationError(this.logger);
-    this.configKey = configKey ?? defaultConfigKey;
+    this.configKey = configKey ?? DefaultConfigKey;
     this.initializeSerializer({
       serializer: serializer ?? new OutboundMessageIdentitySerializer(),
     });

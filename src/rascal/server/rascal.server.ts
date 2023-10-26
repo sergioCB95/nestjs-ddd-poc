@@ -1,53 +1,8 @@
-import {
-  CustomTransportStrategy,
-  Server,
-  Deserializer,
-} from '@nestjs/microservices';
-import { RascalService } from './rascal.service';
-import { isObservable } from 'rxjs';
-import { InboundMessageIdentityDeserializer } from './inbound-message-entity';
-
-export type OnMessageConfig = {
-  handler: (data: any) => Promise<any>;
-  data: any;
-  content: any;
-  ackOrNack: (err?: any, options?: any) => Promise<void>;
-};
-
-export type RascalServerOptions = {
-  rascalService: RascalService;
-  config: any;
-  deserializer?: Deserializer;
-  onMessage?: (config: OnMessageConfig) => Promise<void>;
-  onSubscriptionError?: (err: any) => Promise<void>;
-};
-
-const defaultOnMessage =
-  (logger) =>
-  async ({ handler, data, ackOrNack }) => {
-    try {
-      const streamOrResult = await handler(data);
-      if (isObservable(streamOrResult)) {
-        streamOrResult.subscribe();
-      }
-      ackOrNack();
-    } catch (err) {
-      logger.error(err);
-      ackOrNack(err, [
-        {
-          strategy: 'republish',
-          defer: 1000,
-          attempts: 10,
-        },
-        {
-          strategy: 'nack',
-        },
-      ]);
-    }
-  };
-
-const defaultOnSubscriptionError = (logger) => async (err: any) =>
-  logger.error(err);
+import { CustomTransportStrategy, Server } from '@nestjs/microservices';
+import { RascalService } from '../service';
+import { InboundMessageIdentityDeserializer } from './deserializer';
+import { defaultOnMessage, defaultOnSubscriptionError } from './defaults';
+import { OnMessageConfig, RascalServerOptions } from '.';
 
 export class RascalServer extends Server implements CustomTransportStrategy {
   private readonly config: any;

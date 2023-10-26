@@ -1,18 +1,8 @@
 import { BrokerAsPromised as Broker } from 'rascal';
 import { Logger } from '@nestjs/common';
+import { defaultBrokerSetUp, defaultOnConnectionError } from './defaults';
+import { RascalServiceOptions } from './rascalService.options';
 
-export type RascalServiceOptions = {
-  brokerSetUp?: () => Promise<void>;
-  onConnectionError?: (err: any) => Promise<void>;
-};
-
-const defaultBrokerSetUp = (logger) => async () => {
-  logger.debug('Running default broker setup');
-};
-
-const defaultOnConnectionError = (logger) => async (err: any) => {
-  logger.error('Rascal connection error', err);
-};
 export class RascalService {
   broker: Broker;
   private readonly logger = new Logger(RascalService.name);
