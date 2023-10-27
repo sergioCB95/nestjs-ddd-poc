@@ -8,12 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { OrderService } from '../domain/order.service';
-import { CreateOrderDTOMapper } from './dtos/controller/mappers/createOrder.dto.mapper';
-import { UpdateOrderStatusDTO } from './dtos/controller/UpdateOrderStatus.dto';
-import { UpdateOrderDTO } from './dtos/controller/UpdateOrder.dto';
-import { CreateOrderDTO } from './dtos/controller/createOrder.dto';
 import { Order } from '../domain/aggregators/order.aggregate';
-import { UpdateOrderDTOMapper } from './dtos/controller/mappers/updateOrder.dto.mapper';
 import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
 import { ApiTags } from '@nestjs/swagger';
 import { AsyncApiPub } from 'nestjs-asyncapi';
@@ -47,34 +42,8 @@ export class OrderController {
     },
   })
   @Post()
-  save(@Body() order: CreateOrderDTO): Promise<Order> {
-    return this.orderService.save(new CreateOrderDTOMapper().toNewOrder(order));
-  }
-
-  @AsyncApiPub({
-    channel: 'nestjs-ddd-poc.v1.order.updated',
-    message: {
-      payload: UpdateOrderEventDto,
-    },
-  })
-  @Put()
-  update(@Body() order: UpdateOrderDTO): Promise<OrderUpdatedTuple> {
-    return this.orderService.update(
-      new UpdateOrderDTOMapper().toUpdateOrder(order),
-    );
-  }
-
-  @AsyncApiPub({
-    channel: 'nestjs-ddd-poc.v1.order.updated',
-    message: {
-      payload: UpdateOrderEventDto,
-    },
-  })
-  @Put('status')
-  updateStatus(
-    @Body() { id, status }: UpdateOrderStatusDTO,
-  ): Promise<OrderUpdatedTuple> {
-    return this.orderService.updateStatus(id, status);
+  create(): Promise<Order> {
+    return this.orderService.create();
   }
 
   @AsyncApiPub({

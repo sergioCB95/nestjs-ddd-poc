@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class UpdateOrderItemDTO {
   @ApiProperty()
   @Type(() => String)
-  id?: string;
+  id: string;
 
   @ApiProperty()
   @Type(() => Number)

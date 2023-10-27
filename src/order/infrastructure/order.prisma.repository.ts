@@ -4,8 +4,7 @@ import { Order } from '../domain/aggregators/order.aggregate';
 import { Injectable } from '@nestjs/common';
 import { OrderStoredDtoMapper } from './dtos/mappers/order.stored.dto.mapper';
 import { OrderItemStoredDtoMapper } from './dtos/mappers/orderItem.stored.dto.mapper';
-import { OrderUpdatedTuple } from '../domain/aggregators/orderUpdatedTuple.aggregate';
-import { UpdatedTupleFactory } from '../../commons/domain/updatedTuple.factory';
+import { OrderItem } from '../domain/entities/orderItem.entity';
 
 @Injectable()
 export class OrderPrismaRepository implements OrderRepository {
@@ -33,70 +32,51 @@ export class OrderPrismaRepository implements OrderRepository {
   }
 
   async save(order: Order): Promise<Order> {
-    const newOrderDao = this.orderStoredDtoMapper.fromOrder(order);
-    const newOrderItemsDao = order.items.map(
-      this.orderItemStoredDtoMapper.fromOrderItem,
-    );
-    const newOrder = await this.prisma.order.create({
-      data: {
-        ...newOrderDao,
-        items: {
-          create: newOrderItemsDao,
-        },
-      },
-      include: {
-        items: true,
-      },
+    const newOrderDTO = this.orderStoredDtoMapper.fromOrder(order);
+    await this.prisma.order.create({
+      data: newOrderDTO,
     });
-    return this.orderStoredDtoMapper.toOrder(newOrder, newOrder.items);
+    const orderWithItems = await this.getById(order.id);
+    return orderWithItems;
   }
 
-  async update(order: Order): Promise<OrderUpdatedTuple> {
-    const storedOrder = await this.getById(order.id);
-
-    const itemsToCreate = order.items.filter(
-      (item) => !storedOrder.items.includes(item),
-    );
-    const itemsToUpdate = storedOrder.items.filter((item) =>
-      order.items.includes(item),
-    );
-    const itemsToDelete = storedOrder.items.filter(
-      (item) => !order.items.includes(item),
-    );
-
-    const orderDAO = this.orderStoredDtoMapper.fromOrder(order);
-
-    const orderUpdate = this.prisma.order.update({
+  async update(order: Order): Promise<Order> {
+    const orderDTO = this.orderStoredDtoMapper.fromOrder(order);
+    await this.prisma.order.update({
       where: { id: order.id },
-      data: {
-        ...orderDAO,
-        items: {
-          deleteMany: itemsToDelete.map((item) => ({ id: item.id })),
-          createMany: {
-            data: itemsToCreate.map(
-              this.orderItemStoredDtoMapper.fromOrderItem,
-            ),
-          },
-        },
-      },
-      include: {
-        items: true,
-      },
+      data: orderDTO,
     });
-    const orderItemUpdates = itemsToUpdate.map((item) =>
-      this.prisma.orderItem.update({
-        where: { id: item.id },
-        data: this.orderItemStoredDtoMapper.fromOrderItem(item),
-      }),
-    );
-
-    await this.prisma.$transaction([orderUpdate, ...orderItemUpdates]);
-    const orderUpdated = await this.getById(order.id);
-
-    return new UpdatedTupleFactory<Order>().build(orderUpdated, storedOrder);
+    const orderWithItems = await this.getById(order.id);
+    return orderWithItems;
   }
 
   async delete(id: string): Promise<void> {
     await this.prisma.order.delete({ where: { id } });
+  }
+
+  async saveItem(id: string, orderItem: OrderItem): Promise<Order> {
+    await this.prisma.orderItem.create({
+      data: {
+        ...orderItem,
+        orderId: id,
+      },
+    });
+    const order = await this.getById(id);
+    return order;
+  }
+  async updateItem(id: string, orderItem: OrderItem): Promise<Order> {
+    await this.prisma.orderItem.update({
+      where: { id: orderItem.id },
+      data: { ...orderItem, id },
+    });
+    const order = await this.getById(id);
+    return order;
+  }
+  async deleteItem(id: string, itemId: string): Promise<Order> {
+    await this.prisma.orderItem.delete({
+      where: { id: itemId },
+    });
+    const order = await this.getById(id);
+    return order;
   }
 }

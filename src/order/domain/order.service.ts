@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OrderRepository } from './order.repository';
 import { Order } from './aggregators/order.aggregate';
-import { NewOrder } from './aggregators/newOrder.aggregate';
-import { UpdatedOrder } from './aggregators/updatedOrder.aggregate';
 import { OrderFactory } from './factories/order.factory';
 import { OrderUpdatedTuple } from './aggregators/orderUpdatedTuple.aggregate';
 import { EventPublisher } from '../../commons/domain/event.publisher';
@@ -12,6 +10,7 @@ import { OrderStatus } from './entities/orderStatus.entity';
 import { NewOrderItem } from './entities/newOrderItem.entity';
 import { OrderItemFactory } from './factories/orderItem.factory';
 import { OrderItem } from './entities/orderItem.entity';
+import { UpdatedTupleFactory } from 'src/commons/domain/updatedTuple.factory';
 
 @Injectable()
 export class OrderService {
@@ -28,16 +27,21 @@ export class OrderService {
     return this.orderRepository.getAll();
   }
 
-  async save(newOrder: NewOrder): Promise<Order> {
-    const order = new OrderFactory().createNewOrder(newOrder);
+  async create(): Promise<Order> {
+    const order = new OrderFactory().createNewOrder();
     const storedOrder = await this.orderRepository.save(order);
     await this.orderPublisher.publish(new OrderCreatedEvent(storedOrder));
     return storedOrder;
   }
 
-  async update(updatedOrder: UpdatedOrder): Promise<OrderUpdatedTuple> {
-    const order = new OrderFactory().createUpdatedOrder(updatedOrder);
-    const orderUpdatedTuple = await this.orderRepository.update(order);
+  private async buildOrderUpdatedTupleAndPublish(
+    newOrder: Order,
+    oldOrder: Order,
+  ): Promise<OrderUpdatedTuple> {
+    const orderUpdatedTuple = new UpdatedTupleFactory<Order>().build(
+      newOrder,
+      oldOrder,
+    );
     await this.orderPublisher.publish(new OrderUpdatedEvent(orderUpdatedTuple));
     return orderUpdatedTuple;
   }
@@ -47,21 +51,29 @@ export class OrderService {
     status: OrderStatus,
   ): Promise<OrderUpdatedTuple> {
     const order = await this.get(id);
+    const originalOrder = new OrderFactory().createOrder(order);
     order.status = status;
-    const orderUpdatedTuple = await this.update(order);
-    return orderUpdatedTuple;
-  }
-
-  async delete(id: string): Promise<void> {
-    return this.orderRepository.delete(id);
+    const orderUpdated = await this.orderRepository.update(order);
+    return await this.buildOrderUpdatedTupleAndPublish(
+      orderUpdated,
+      originalOrder,
+    );
   }
 
   async checkout(id: string, address: string): Promise<OrderUpdatedTuple> {
     const order = await this.get(id);
+    const originalOrder = new OrderFactory().createOrder(order);
     order.address = address;
     order.status = OrderStatus.PAID;
-    const orderUpdatedTuple = await this.update(order);
-    return orderUpdatedTuple;
+    const orderUpdated = await this.orderRepository.update(order);
+    return await this.buildOrderUpdatedTupleAndPublish(
+      orderUpdated,
+      originalOrder,
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    return this.orderRepository.delete(id);
   }
 
   async addItem(
@@ -70,9 +82,8 @@ export class OrderService {
   ): Promise<OrderUpdatedTuple> {
     const order = await this.get(id);
     const orderItem = new OrderItemFactory().createNewOrderItem(newOrderItem);
-    order.items.push(orderItem);
-    const orderUpdatedTuple = await this.update(order);
-    return orderUpdatedTuple;
+    const orderUpdated = await this.orderRepository.saveItem(id, orderItem);
+    return await this.buildOrderUpdatedTupleAndPublish(orderUpdated, order);
   }
 
   async updateItem(
@@ -80,25 +91,13 @@ export class OrderService {
     orderItem: OrderItem,
   ): Promise<OrderUpdatedTuple> {
     const order = await this.get(id);
-    const foundIndex = order.items.findIndex(
-      (item) => item.id === orderItem.id,
-    );
-    if (foundIndex === -1) {
-      throw new Error('Order item not found');
-    }
-    order.items[foundIndex] = orderItem;
-    const orderUpdatedTuple = await this.update(order);
-    return orderUpdatedTuple;
+    const orderUpdated = await this.orderRepository.updateItem(id, orderItem);
+    return await this.buildOrderUpdatedTupleAndPublish(orderUpdated, order);
   }
 
   async deleteItem(id: string, itemId: string): Promise<OrderUpdatedTuple> {
     const order = await this.get(id);
-    const filteredItems = order.items.filter((item) => item.id !== itemId);
-    if (order.items.length === filteredItems.length) {
-      throw new Error('Order item not found');
-    }
-    order.items = filteredItems;
-    const orderUpdatedTuple = await this.update(order);
-    return orderUpdatedTuple;
+    const orderUpdated = await this.orderRepository.deleteItem(id, itemId);
+    return await this.buildOrderUpdatedTupleAndPublish(orderUpdated, order);
   }
 }

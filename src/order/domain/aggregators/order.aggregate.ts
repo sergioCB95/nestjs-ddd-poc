@@ -1,4 +1,9 @@
 import { OrderItem } from '../entities/orderItem.entity';
-import { BaseOrder } from './baseOrder.aggregate';
+import { OrderStatus } from '../entities/orderStatus.entity';
 
-export type Order = BaseOrder<OrderItem>;
+export interface Order {
+  id: string;
+  status: OrderStatus;
+  address: string | null;
+  items: Array<OrderItem>;
+}
