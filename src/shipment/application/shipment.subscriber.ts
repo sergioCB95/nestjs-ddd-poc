@@ -18,7 +18,10 @@ export class ShipmentSubscriber {
   })
   @EventPattern(OrderEvents.Updated)
   async orderUpdatedSubscription(@Payload() data: OrderUpdatedTuple) {
-    if (data.new.status === OrderStatus.PAID) {
+    if (
+      data.old.status === OrderStatus.PENDING &&
+      data.new.status === OrderStatus.PAID
+    ) {
       await this.shipmentService.create(data.new.id);
     }
   }

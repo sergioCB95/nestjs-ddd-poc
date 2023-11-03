@@ -22,8 +22,10 @@ export class OrderSubscriber {
     @Payload() data: ShipmentUpdatedTuple,
   ) {
     if (
+      data.new.statuses[data.old.statuses.length - 1].type ===
+        ShipmentStatusType.IN_PROCESS &&
       data.new.statuses[data.new.statuses.length - 1].type ===
-      ShipmentStatusType.READY
+        ShipmentStatusType.READY
     ) {
       await this.orderService.updateStatus(
         data.new.orderId,
