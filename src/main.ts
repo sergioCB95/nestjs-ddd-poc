@@ -4,8 +4,8 @@ import { AsyncApiModule } from './commons/application/asyncApi.module';
 import { OpenApiModule } from './commons/application/openApi.module';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import config from './commons/config';
-import { RascalServer } from './rascal/server';
-import { RascalService } from './rascal/service';
+import { RascalServer } from 'nestjs-rascal';
+import { RascalService } from 'nestjs-rascal';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {

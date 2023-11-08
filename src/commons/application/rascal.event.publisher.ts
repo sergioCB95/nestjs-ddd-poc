@@ -1,5 +1,5 @@
 import { EventPublisher } from '../domain/event.publisher';
-import { RascalClient } from '../../rascal/client';
+import { RascalClient } from 'nestjs-rascal';
 import { firstValueFrom } from 'rxjs';
 
 export class RascalEventPublisher extends EventPublisher {
